@@ -4,7 +4,7 @@ const path = require('path');
 const transporter = require('./nodemailer');
 
 // Set our port to 8080
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
 app.use(express.urlencoded({
   extended: false
