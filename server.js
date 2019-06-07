@@ -1,27 +1,43 @@
-// Dependencies
-var http = require("http");
-var fs = require("fs");
+const express = require('express');
+const app = express();
+const path = require('path');
+const transporter = require('./nodemailer');
 
 // Set our port to 8080
-var PORT = 8080;
+const PORT = 8080;
 
-// Create our server
-var server = http.createServer(handleRequest);
+app.use(express.urlencoded({
+  extended: false
+}));
+app.use(express.json());
 
-// Create a function for handling the requests and responses coming into our server
-function handleRequest(req, res) {
 
-  // Here we use the fs package to read our index.html file
-  fs.readFile(__dirname + "/index.html", function(err, data) {
+app.use(express.static('public'));
 
-    // We then respond to the client with the HTML page by specifically telling the browser that we are delivering
-    // an html file.
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.end(data);
+// Set our Root Route
+app.get("/", function (req, res) {
+  res.sendFile(path.join(__dirname, "./public/index.html"));
+});
+
+app.post('/email', (req, res) => {
+  const mailOptions = {
+    from: 'uoautomailer@gmail.com',
+    to: req.body.visitorEmail,
+    subject: 'Greetings, fellow human, from Micah Rabinowitz!',
+    text: 'Thank you ' + req.body.visitorName + ' for contacting me. My email address is micahrabinowitz@gmail.com and I would love to hear from you. please feel free to copy and paste the message you submitted, which I have added here: "' + req.body.message + '". Thank you! - Micah Rabinowitz'
+};
+transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log('Email sent: ' + info.response);
+    }
   });
-}
+  console.log("Data", req.body)
+  // res.json({ message: "we have contact"})
+})
 
 // Starts our server
-server.listen(PORT, function() {
+app.listen(PORT, function() {
   console.log("Server is listening on PORT: " + PORT);
 });
